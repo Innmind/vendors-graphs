@@ -15,11 +15,13 @@
         "issues": "http://github.com/innmind/vendors-graphs/issues"
     },
     "require": {
-        "php": "~8.2"
+        "php": "~8.2",
+        "innmind/framework": "~2.2",
+        "innmind/ui": "dev-develop"
     },
     "autoload": {
         "psr-4": {
-            "innmind\\vendors-graphs\\": "src/"
+            "App\\": "src/"
         }
     },
     "require-dev": {
