@@ -9,6 +9,8 @@ use Formal\ORM\{
 };
 use Innmind\Url\Url;
 use Innmind\Immutable\Set;
+use Innmind\TimeContinuum\Clock;
+use Innmind\TimeContinuum\PointInTime;
 
 /**
  * @psalm-immutable
@@ -26,6 +28,7 @@ final class Vendor
         private Url $image,
         #[Contains(Package::class)]
         private Set $packages,
+        private PointInTime $addedAt,
     ) {
     }
 
@@ -34,6 +37,7 @@ final class Vendor
      * @param Set<Package> $packages
      */
     public static function of(
+        Clock $clock,
         string $name,
         Url $image,
         Set $packages,
@@ -43,6 +47,7 @@ final class Vendor
             $name,
             $image,
             $packages,
+            $clock->now(),
         );
     }
 }
