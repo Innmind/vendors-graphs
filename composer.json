@@ -1,7 +1,7 @@
 {
     "name": "innmind/vendors-graphs",
-    "type": "library",
-    "description": "",
+    "type": "project",
+    "description": "View dependencies graphs for your vendors",
     "keywords": [],
     "homepage": "http://github.com/innmind/vendors-graphs",
     "license": "MIT",
