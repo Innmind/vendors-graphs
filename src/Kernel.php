@@ -78,6 +78,11 @@ final class Kernel implements Middleware
                 new Render(),
                 $os->control()->processes(),
                 $get(Services::storage()),
+            ))
+            ->command(static fn($get, $os) => new Command\UpdateVendors(
+                $get(Services::orm()),
+                $get(Services::loadVendor()),
+                $get(Services::storage()),
             ));
     }
 }
