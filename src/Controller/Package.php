@@ -72,7 +72,7 @@ final class Package
                         $this->storage,
                         $vendor,
                         $package,
-                        match (Str::of($request->url()->path()->toString())->endsWith('dependencies')) {
+                        match (Str::of($request->url()->path()->toString())->contains('dependencies')) {
                             true => Domain\Direction::dependencies,
                             false => Domain\Direction::dependents,
                         },
