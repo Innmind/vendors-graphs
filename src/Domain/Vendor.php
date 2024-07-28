@@ -66,4 +66,18 @@ final class Vendor
     {
         return $this->packages;
     }
+
+    /**
+     * @param Set<Package> $packages
+     */
+    public function update(Set $packages): self
+    {
+        return new self(
+            $this->id,
+            $this->name,
+            $this->image,
+            $packages,
+            $this->addedAt,
+        );
+    }
 }

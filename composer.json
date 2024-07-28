@@ -21,7 +21,7 @@
         "formal/orm": "^3.1",
         "innmind/url-template": "~3.1",
         "innmind/html": "~6.4",
-        "innmind/dependency-graph": "~3.6"
+        "innmind/dependency-graph": "~3.7"
     },
     "autoload": {
         "psr-4": {
