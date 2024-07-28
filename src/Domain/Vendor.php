@@ -65,6 +65,16 @@ final class Vendor
         return $this->name;
     }
 
+    public function packagist(): Url
+    {
+        return $this->packagist;
+    }
+
+    public function github(): Url
+    {
+        return $this->github;
+    }
+
     public function image(): Url
     {
         return $this->image;

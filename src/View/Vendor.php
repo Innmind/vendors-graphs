@@ -47,14 +47,8 @@ final class Vendor
             )))
             ->keep(Instance::of(File::class));
 
-        $toolbar = Toolbar::of(Text::of($vendor->name()))
-            ->leading(Button::of(
-                Routes::index->template()->expand(Map::of()),
-                Text::of('< Vendors'),
-            ));
-
-        $toolbar = $svg->match(
-            static fn() => $toolbar->trailing(Picker::of(
+        $extra = $svg->match(
+            static fn() => [Picker::of(
                 $zoom,
                 Picker\Value::of(
                     Domain\Zoom::small,
@@ -86,14 +80,30 @@ final class Vendor
                         Text::of('100%'),
                     ),
                 ),
-            )),
-            static fn() => $toolbar,
+            )],
+            static fn() => [],
         );
+        $toolbar = Toolbar::of(Text::of($vendor->name()))
+            ->leading(Button::of(
+                Routes::index->template()->expand(Map::of()),
+                Text::of('< Vendors'),
+            ))
+            ->trailing(Stack::horizontal(
+                Button::of(
+                    $vendor->packagist(),
+                    Text::of('Packagist'),
+                ),
+                Button::of(
+                    $vendor->github(),
+                    Text::of('GitHub'),
+                ),
+                ...$extra,
+            ));
 
         $view = Window::of(
             $vendor->name(),
             Stack::vertical(
-                $toolbar, // todo trailing buttons
+                $toolbar,
                 Stack::horizontal(
                     Listing::of(
                         $vendor
