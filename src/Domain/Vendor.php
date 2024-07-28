@@ -25,6 +25,8 @@ final class Vendor
     private function __construct(
         private Id $id,
         private string $name,
+        private Url $packagist,
+        private Url $github,
         private Url $image,
         #[Contains(Package::class)]
         private Set $packages,
@@ -39,12 +41,16 @@ final class Vendor
     public static function of(
         Clock $clock,
         string $name,
+        Url $packagist,
+        Url $github,
         Url $image,
         Set $packages,
     ): self {
         return new self(
             Id::new(self::class),
             $name,
+            $packagist,
+            $github,
             $image,
             $packages,
             $clock->now(),
@@ -80,6 +86,8 @@ final class Vendor
         return new self(
             $this->id,
             $this->name,
+            $this->packagist,
+            $this->github,
             $this->image,
             $packages,
             $this->addedAt,

@@ -26,6 +26,7 @@ use Innmind\Html\{
 };
 use Innmind\Xml\Reader;
 use Innmind\Url\{
+    Url,
     Path,
     Query,
 };
@@ -98,10 +99,12 @@ final class AddVendor implements Command
                 static fn($package) => $package
                     ->github()
                     ->withPath(
-                        $package
-                            ->github()
-                            ->path()
-                            ->resolve(Path::of('../')),
+                        Path::of(\dirname(
+                            $package
+                                ->github()
+                                ->path()
+                                ->toString(),
+                        )),
                     ),
             )
             ->flatMap(
@@ -110,36 +113,38 @@ final class AddVendor implements Command
                     Method::get,
                     ProtocolVersion::v11,
                 ))
-                    ->maybe(),
-            )
-            ->map(static fn($success) => $success->response()->body())
-            ->flatMap($this->parse)
-            ->map(Elements::of('img'))
-            ->flatMap(
-                static fn($imgs) => $imgs
-                    ->keep(Instance::of(Img::class))
-                    ->find(
-                        static fn(Img $img) => $img
-                            ->attribute('class')
-                            ->filter(static fn($class) => \str_contains(
-                                $class->value(),
-                                'avatar',
-                            ))
-                            ->match(
-                                static fn() => true,
-                                static fn() => false,
+                    ->maybe()
+                    ->map(static fn($success) => $success->response()->body())
+                    ->flatMap($this->parse)
+                    ->map(Elements::of('img'))
+                    ->flatMap(
+                        static fn($imgs) => $imgs
+                            ->keep(Instance::of(Img::class))
+                            ->find(
+                                static fn(Img $img) => $img
+                                    ->attribute('class')
+                                    ->filter(static fn($class) => \str_contains(
+                                        $class->value(),
+                                        'avatar',
+                                    ))
+                                    ->match(
+                                        static fn() => true,
+                                        static fn() => false,
+                                    ),
                             ),
-                    ),
+                    )
+                    ->map(static fn($img) => $img->src()->withQuery(
+                        Query::of('s=150'),
+                    ))
+                    ->map(fn($img) => Vendor::of(
+                        $this->clock,
+                        $vendor,
+                        Url::of('https://packagist.org/packages/'.$vendor),
+                        $url,
+                        $img,
+                        $packages,
+                    )),
             )
-            ->map(static fn($img) => $img->src()->withQuery(
-                Query::of('s=150'),
-            ))
-            ->map(fn($img) => Vendor::of(
-                $this->clock,
-                $vendor,
-                $img,
-                $packages,
-            ))
             ->flatMap(
                 fn($vendor) => $this
                     ->orm
