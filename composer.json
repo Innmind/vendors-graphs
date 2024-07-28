@@ -19,7 +19,6 @@
         "innmind/framework": "~2.2",
         "innmind/ui": "dev-develop",
         "formal/orm": "^3.1",
-        "innmind/url-template": "~3.1",
         "innmind/html": "~6.4",
         "innmind/dependency-graph": "~3.7"
     },

@@ -50,4 +50,9 @@ final class Package
     {
         return $this->name;
     }
+
+    public function github(): Url
+    {
+        return $this->github;
+    }
 }

@@ -43,23 +43,38 @@ final class Kernel implements Middleware
                     ->filesystem()
                     ->mount(Path::of(__DIR__.'/../var/svg/')),
             )
+            ->service(
+                Services::loadPackage,
+                static fn($_, $os) => new Loader\Package(
+                    $os->remote()->http(),
+                ),
+            )
+            ->service(
+                Services::loadVendor,
+                static fn($get, $os) => new Loader\Vendor(
+                    $os->remote()->http(),
+                    $get(Services::loadPackage()),
+                ),
+            )
+            ->service(
+                Services::loadVendorDependencies,
+                static fn($get) => new Loader\VendorDependencies(
+                    $get(Services::loadVendor()),
+                    $get(Services::loadPackage()),
+                ),
+            )
             ->command(static fn($get, $os) => new Command\AddVendor(
                 $os->clock(),
                 $os->remote()->http(),
                 $get(Services::reader()),
                 $get(Services::orm()),
+                $get(Services::loadVendor()),
             ))
             ->command(static fn($get, $os) => new Command\RenderVendor(
                 $get(Services::orm()),
-                new Loader\VendorDependencies(
-                    $vendor = new Loader\Vendor(
-                        $os->remote()->http(),
-                        $package = new Loader\Package($os->remote()->http()),
-                    ),
-                    $package,
-                ),
-                new Loader\Dependencies($package),
-                new Loader\Dependents($vendor),
+                $get(Services::loadVendorDependencies()),
+                new Loader\Dependencies($get(Services::loadPackage())),
+                new Loader\Dependents($get(Services::loadVendor())),
                 new Render(),
                 $os->control()->processes(),
                 $get(Services::storage()),

@@ -7,6 +7,11 @@ use Innmind\DI\Service;
 use Formal\ORM\Manager;
 use Innmind\Xml\Reader;
 use Innmind\Filesystem\Adapter;
+use Innmind\DependencyGraph\Loader\{
+    VendorDependencies,
+    Vendor,
+    Package,
+};
 
 /**
  * @template S of object
@@ -17,6 +22,9 @@ enum Services implements Service
     case orm;
     case reader;
     case storage;
+    case loadVendorDependencies;
+    case loadVendor;
+    case loadPackage;
 
     /**
      * @return self<Manager>
@@ -43,5 +51,32 @@ enum Services implements Service
     {
         /** @var self<Adapter> */
         return self::storage;
+    }
+
+    /**
+     * @return self<VendorDependencies>
+     */
+    public static function loadVendorDependencies(): self
+    {
+        /** @var self<VendorDependencies> */
+        return self::loadVendorDependencies;
+    }
+
+    /**
+     * @return self<Vendor>
+     */
+    public static function loadVendor(): self
+    {
+        /** @var self<Vendor> */
+        return self::loadVendor;
+    }
+
+    /**
+     * @return self<Package>
+     */
+    public static function loadPackage(): self
+    {
+        /** @var self<Package> */
+        return self::loadPackage;
     }
 }

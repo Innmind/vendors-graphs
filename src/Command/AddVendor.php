@@ -12,6 +12,11 @@ use Innmind\CLI\{
     Console,
 };
 use Formal\ORM\Manager;
+use Innmind\DependencyGraph\{
+    Loader,
+    Vendor\Name,
+    Package as PackageModel,
+};
 use Innmind\TimeContinuum\Clock;
 use Innmind\HttpTransport\Transport;
 use Innmind\Http\{
@@ -25,16 +30,12 @@ use Innmind\Html\{
 };
 use Innmind\Xml\Reader;
 use Innmind\Url\{
-    Url,
     Path,
     Query,
 };
-use Innmind\UrlTemplate\Template;
-use Innmind\Json\Json;
 use Innmind\Immutable\{
     Str,
     Set,
-    Map,
     Either,
     Predicate\Instance,
 };
@@ -45,21 +46,20 @@ final class AddVendor implements Command
     private Transport $http;
     private Reader $parse;
     private Manager $orm;
-    private Template $list;
-    private Template $github;
+    private Loader\Vendor $load;
 
     public function __construct(
         Clock $clock,
         Transport $http,
         Reader $parse,
         Manager $orm,
+        Loader\Vendor $load,
     ) {
         $this->clock = $clock;
         $this->http = $http;
         $this->parse = $parse;
         $this->orm = $orm;
-        $this->list = Template::of('https://packagist.org/packages/list.json?vendor={name}&fields[]=repository&fields[]=abandoned');
-        $this->github = Template::of('https://github.com/{vendor}');
+        $this->load = $load;
     }
 
     public function __invoke(Console $console): Console
@@ -72,20 +72,11 @@ final class AddVendor implements Command
                 ->exit(1);
         }
 
-        return ($this->http)(Request::of(
-            $this->list->expand(Map::of(['name', $vendor])),
-            Method::get,
-            ProtocolVersion::v11,
-        ))
-            ->maybe()
-            ->map(static fn($success) => $success->response()->body()->toString())
-            ->flatMap(Json::maybeDecode(...))
-            ->match(
-                fn($content) => $this->parse($console, $vendor, $content),
-                static fn() => $console
-                    ->error(Str::of("Unknown vendor\n"))
-                    ->exit(1),
-            );
+        return $this->parse(
+            $console,
+            $vendor,
+            ($this->load)(Name::of($vendor))->packages(),
+        );
     }
 
     /**
@@ -98,68 +89,48 @@ final class AddVendor implements Command
 
     /**
      * @param non-empty-string $vendor
+     * @param Set<PackageModel> $packages
      */
     private function parse(
         Console $console,
         string $vendor,
-        mixed $content,
+        Set $packages,
     ): Console {
-        // TODO use innmind/validation (but it requires to add Is::associativeArray(Constraint, Constraint))
-        if (
-            !\is_array($content) ||
-            !\array_key_exists('packages', $content) ||
-            !\is_array($content['packages'])
-        ) {
-            return $console
-                ->error(Str::of("Invalid packagist response\n"))
-                ->exit(1);
-        }
-
-        /** @var Set<Package> */
-        $packages = Set::of();
-        $packagist = Template::of('https://packagist.org/packages{/vendor,package}');
-
-        foreach ($content['packages'] as $key => $value) {
-            if (
-                !\is_string($key) ||
-                !\is_array($value) ||
-                !\array_key_exists('repository', $value) ||
-                !\is_string($value['repository']) ||
-                !\array_key_exists('abandoned', $value) ||
-                $key === '' ||
-                $value['abandoned'] !== false
-            ) {
-                continue;
-            }
-
-            /** @var non-empty-string */
-            $package = Str::of($key)
-                ->drop(Str::of($vendor)->length() + 1) // +1 for the /
-                ->toString();
-            $repository = Url::of($value['repository'].'/');
-
-            $packages = ($packages)(Package::of(
-                $package,
-                $packagist->expand(Map::of(
-                    ['vendor', $vendor],
-                    ['package', $key],
-                )),
-                $repository,
-                $repository->withPath(
-                    $repository->path()->resolve(Path::of('actions')),
+        /** @psalm-suppress ArgumentTypeCoercion */
+        $packages = $packages
+            ->filter(static fn($package) => !$package->abandoned())
+            ->map(static fn($package) => Package::of(
+                $package->name()->package(),
+                $package->packagist(),
+                $package->repository(),
+                $package->repository()->withPath(
+                    $package->repository()->path()->resolve(Path::of('actions')),
                 ),
-                $repository->withPath(
-                    $repository->path()->resolve(Path::of('releases')),
+                $package->repository()->withPath(
+                    $package->repository()->path()->resolve(Path::of('releases')),
                 ),
             ));
-        }
 
-        return ($this->http)(Request::of(
-            $this->github->expand(Map::of(['vendor', $vendor])),
-            Method::get,
-            ProtocolVersion::v11,
-        ))
-            ->maybe()
+        return $packages
+            ->find(static fn() => true)
+            ->map(
+                static fn($package) => $package
+                    ->github()
+                    ->withPath(
+                        $package
+                            ->github()
+                            ->path()
+                            ->resolve(Path::of('../')),
+                    ),
+            )
+            ->flatMap(
+                fn($url) => ($this->http)(Request::of(
+                    $url,
+                    Method::get,
+                    ProtocolVersion::v11,
+                ))
+                    ->maybe(),
+            )
             ->map(static fn($success) => $success->response()->body())
             ->flatMap($this->parse)
             ->map(Elements::of('img'))
