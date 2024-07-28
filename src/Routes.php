@@ -9,13 +9,15 @@ enum Routes
 {
     case index;
     case vendor;
+    case packageDependencies;
     case style;
 
     public function template(): Template
     {
         return match ($this) {
             self::index => Template::of('/'),
-            self::vendor => Template::of('/vendor/{name}'),
+            self::vendor => Template::of('/vendor{/name}'),
+            self::packageDependencies => Template::of('/vendor{/vendor,package}/dependencies'),
             self::style => Template::of('/style'),
         };
     }
@@ -27,7 +29,8 @@ enum Routes
     {
         return match ($this) {
             self::index => 'GET /',
-            self::vendor => 'GET /vendor/{name}',
+            self::vendor => 'GET /vendor{/name}',
+            self::packageDependencies => 'GET /vendor{/vendor,package}/dependencies',
             self::style => 'GET /style',
         };
     }

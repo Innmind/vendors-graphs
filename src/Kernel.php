@@ -149,6 +149,38 @@ final class Kernel implements Middleware
                     ),
             )
             ->route(
+                Routes::packageDependencies->toString(),
+                static fn($request, $variables, $get) => $get(Services::orm())
+                    ->repository(Domain\Vendor::class)
+                    ->matching(Property::of(
+                        'name',
+                        Sign::equality,
+                        $variables->get('vendor'),
+                    ))
+                    ->take(1)
+                    ->first()
+                    ->filter(static fn() => $variables->get('package') !== '')
+                    ->match(
+                        static fn($vendor) => Response::of(
+                            StatusCode::ok,
+                            $request->protocolVersion(),
+                            null,
+                            View\Package::of(
+                                $get(Services::storage()),
+                                $vendor,
+                                $variables->get('package'),
+                            ),
+                        ),
+                        static fn() => Response::of(
+                            StatusCode::found,
+                            $request->protocolVersion(),
+                            Headers::of(
+                                Location::of(Routes::index->template()->expand(Map::of())),
+                            ),
+                        ),
+                    ),
+            )
+            ->route(
                 Routes::style->toString(),
                 static fn($request, $_, $__, $os) => Theme::default
                     ->load($os->filesystem())

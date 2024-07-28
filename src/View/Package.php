@@ -10,6 +10,7 @@ use App\{
 use Innmind\Filesystem\{
     Adapter,
     File,
+    Directory,
     Name,
 };
 use Innmind\UI\{
@@ -32,11 +33,15 @@ use Innmind\Immutable\{
     Predicate\Instance,
 };
 
-final class Vendor
+final class Package
 {
+    /**
+     * @param non-empty-string $selectedPackage
+     */
     public static function of(
         Adapter $storage,
         Domain\Vendor $vendor,
+        string $selectedPackage,
     ): Content {
         $view = Window::of(
             $vendor->name(),
@@ -57,23 +62,28 @@ final class Vendor
                                     ['package', $package->name()],
                                 )),
                                 Text::of($package->name()),
-                            ))
+                            )->selectedWhen($selectedPackage === $package->name()))
                             ->prepend(Sequence::of(NavigationLink::of(
                                 Routes::vendor->template()->expand(Map::of(
                                     ['name', $vendor->name()],
                                 )),
                                 Text::of('Overview'),
-                            )->selectedWhen(true))),
+                            ))),
                     ),
                     $storage
-                        ->get(Name::of(\sprintf(
-                            '%s.svg',
-                            $vendor->name(),
+                        ->get(Name::of($vendor->name()))
+                        ->keep(Instance::of(Directory::class))
+                        ->flatMap(static fn($directory) => $directory->get(Name::of(
+                            $selectedPackage,
+                        )))
+                        ->keep(Instance::of(Directory::class))
+                        ->flatMap(static fn($directory) => $directory->get(Name::of(
+                            'dependencies.svg',
                         )))
                         ->keep(Instance::of(File::class))
                         ->match(
                             static fn($svg) => ScrollView::of(
-                                Svg::of($svg->content())->zoom(50),
+                                Svg::of($svg->content()),
                             ),
                             static fn() => Center::of(
                                 Stack::horizontal(
