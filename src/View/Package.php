@@ -28,6 +28,7 @@ use Innmind\UI\{
     Picker,
 };
 use Innmind\Filesystem\File\Content;
+use Innmind\Url\Url;
 use Innmind\Immutable\{
     Map,
     Sequence,
@@ -44,6 +45,7 @@ final class Package
         Domain\Vendor $vendor,
         string $selectedPackage,
         Domain\Direction $direction,
+        Domain\Zoom $zoom,
     ): Content {
         $toolbar = Toolbar::of(Text::of(\sprintf(
             '%s/%s',
@@ -54,6 +56,14 @@ final class Package
                 Routes::index->template()->expand(Map::of()),
                 Text::of('< Vendors'),
             ));
+        $withSize = static fn(string $size): Url => (match ($direction) {
+            Domain\Direction::dependencies => Routes::packageDependenciesWithSize->template(),
+            Domain\Direction::dependents => Routes::packageDependentsWithSize->template(),
+        })->expand(Map::of(
+            ['vendor', $vendor->name()],
+            ['package', $selectedPackage],
+            ['size', $size],
+        ));
 
         $toolbar = $vendor
             ->packages()
@@ -96,6 +106,30 @@ final class Package
                                     ['package', $package->name()],
                                 )),
                                 Text::of('Dependents'),
+                            ),
+                        ),
+                    ),
+                    Picker::of(
+                        $zoom,
+                        Picker\Value::of(
+                            Domain\Zoom::small,
+                            Button::of(
+                                $withSize('small'),
+                                Text::of('25%'),
+                            ),
+                        ),
+                        Picker\Value::of(
+                            Domain\Zoom::medium,
+                            Button::of(
+                                $withSize('medium'),
+                                Text::of('50%'),
+                            ),
+                        ),
+                        Picker\Value::of(
+                            Domain\Zoom::full,
+                            Button::of(
+                                $withSize('full'),
+                                Text::of('100%'),
                             ),
                         ),
                     ),
@@ -145,7 +179,9 @@ final class Package
                         ->keep(Instance::of(File::class))
                         ->match(
                             static fn($svg) => ScrollView::of(
-                                Svg::of($svg->content()),
+                                Svg::of($svg->content())->zoom(
+                                    $zoom->toInt(),
+                                ),
                             ),
                             static fn() => Center::of(
                                 Stack::horizontal(

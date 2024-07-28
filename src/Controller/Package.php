@@ -76,6 +76,16 @@ final class Package
                             true => Domain\Direction::dependencies,
                             false => Domain\Direction::dependents,
                         },
+                        $variables
+                            ->maybe('size')
+                            ->match(
+                                static fn($size) => match ($size) {
+                                    'small' => Domain\Zoom::small,
+                                    'medium' => Domain\Zoom::medium,
+                                    default => Domain\Zoom::full,
+                                },
+                                static fn() => Domain\Zoom::full,
+                            ),
                     ),
                 ),
                 static fn() => Response::of(
