@@ -14,8 +14,11 @@ use Formal\ORM\{
     Definition\Type\Support,
     Definition\Type\PointInTimeType,
 };
-use Innmind\DependencyGraph\Loader;
-use Innmind\DependencyGraph\Render;
+use Innmind\DependencyGraph\{
+    Loader,
+    Render,
+};
+use Innmind\OperatingSystem\OperatingSystem\Resilient;
 use Innmind\Html\Reader\Reader;
 use Innmind\Url\Path;
 use Innmind\Url\Url;
@@ -25,6 +28,7 @@ final class Kernel implements Middleware
     public function __invoke(Application $app): Application
     {
         return $app
+            ->mapOperatingSystem(Resilient::of(...))
             ->service(Services::orm, static fn($_, $os) => Manager::filesystem(
                 $os
                     ->filesystem()
