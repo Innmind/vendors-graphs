@@ -7,7 +7,10 @@ use App\{
     Domain\Vendor,
     Routes,
 };
-use Formal\ORM\Manager;
+use Formal\ORM\{
+    Manager,
+    Sort,
+};
 use Innmind\Filesystem\File\Content;
 use Innmind\UI\{
     Window,
@@ -37,6 +40,7 @@ final class Main
                     $orm
                         ->repository(Vendor::class)
                         ->all()
+                        ->sort('addedAt', Sort::asc)
                         ->map(static fn($vendor) => NavigationLink::of(
                             Routes::vendor->template()->expand(Map::of(
                                 ['name', $vendor->name()],
