@@ -26,11 +26,17 @@ use Innmind\Http\{
     Response\StatusCode,
     Headers,
     Header\ContentType,
+    Header\Location,
+};
+use Innmind\Specification\{
+    Comparator\Property,
+    Sign,
 };
 use Innmind\Url\{
     Url,
     Path,
 };
+use Innmind\Immutable\Map;
 
 final class Kernel implements Middleware
 {
@@ -111,6 +117,36 @@ final class Kernel implements Middleware
                     null,
                     View\Main::of($get(Services::orm())),
                 ),
+            )
+            ->route(
+                Routes::vendor->toString(),
+                static fn($request, $variables, $get) => $get(Services::orm())
+                    ->repository(Domain\Vendor::class)
+                    ->matching(Property::of(
+                        'name',
+                        Sign::equality,
+                        $variables->get('name'),
+                    ))
+                    ->take(1)
+                    ->first()
+                    ->match(
+                        static fn($vendor) => Response::of(
+                            StatusCode::ok,
+                            $request->protocolVersion(),
+                            null,
+                            View\Vendor::of(
+                                $get(Services::storage()),
+                                $vendor,
+                            ),
+                        ),
+                        static fn() => Response::of(
+                            StatusCode::found,
+                            $request->protocolVersion(),
+                            Headers::of(
+                                Location::of(Routes::index->template()->expand(Map::of())),
+                            ),
+                        ),
+                    ),
             )
             ->route(
                 Routes::style->toString(),

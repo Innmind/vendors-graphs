@@ -19,6 +19,7 @@ use Innmind\UI\{
     Card,
     Shape,
     Image,
+    NavigationLink,
 };
 use Innmind\Url\Url;
 use Innmind\Immutable\Map;
@@ -36,12 +37,16 @@ final class Main
                     $orm
                         ->repository(Vendor::class)
                         ->all()
-                        ->map(static fn($vendor) => Stack::vertical(
-                            Image::of($vendor->image())
-                                ->shape(Shape::cornered),
-                            Text::of($vendor->name()),
+                        ->map(static fn($vendor) => NavigationLink::of(
+                            Routes::vendor->template()->expand(Map::of(
+                                ['name', $vendor->name()],
+                            )),
+                            Stack::vertical(
+                                Image::of($vendor->image())
+                                    ->shape(Shape::cornered),
+                                Text::of($vendor->name()),
+                            ),
                         ))
-                        // todo navigation link
                         ->map(Card::of(...)),
                 ),
             ),
