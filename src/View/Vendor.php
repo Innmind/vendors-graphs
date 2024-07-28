@@ -49,7 +49,7 @@ final class Vendor
                     Listing::of(
                         $vendor
                             ->packages()
-                            ->unsorted()
+                            ->sort(static fn($a, $b) => $a->name() <=> $b->name())
                             ->map(static fn($package) => $package->name())
                             ->prepend(Sequence::of('overview'))
                             ->map(Text::of(...)),
