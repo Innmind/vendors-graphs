@@ -20,8 +20,17 @@ use Innmind\DependencyGraph\{
 };
 use Innmind\OperatingSystem\OperatingSystem\Resilient;
 use Innmind\Html\Reader\Reader;
-use Innmind\Url\Path;
-use Innmind\Url\Url;
+use Innmind\UI\Theme;
+use Innmind\Http\{
+    Response,
+    Response\StatusCode,
+    Headers,
+    Header\ContentType,
+};
+use Innmind\Url\{
+    Url,
+    Path,
+};
 
 final class Kernel implements Middleware
 {
@@ -93,6 +102,34 @@ final class Kernel implements Middleware
                 $get(Services::orm()),
                 $get(Services::loadPackages()),
                 $get(Services::storage()),
-            ));
+            ))
+            ->route(
+                Routes::index->toString(),
+                static fn($request, $_, $get) => Response::of(
+                    StatusCode::ok,
+                    $request->protocolVersion(),
+                    null,
+                    View\Main::of($get(Services::orm())),
+                ),
+            )
+            ->route(
+                Routes::style->toString(),
+                static fn($request, $_, $__, $os) => Theme::default
+                    ->load($os->filesystem())
+                    ->match(
+                        static fn($content) => Response::of(
+                            StatusCode::ok,
+                            $request->protocolVersion(),
+                            Headers::of(
+                                ContentType::of('text', 'css'),
+                            ),
+                            $content,
+                        ),
+                        static fn() => Response::of(
+                            StatusCode::notFound,
+                            $request->protocolVersion(),
+                        ),
+                    ),
+            );
     }
 }

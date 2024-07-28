@@ -59,6 +59,11 @@ final class Vendor
         return $this->name;
     }
 
+    public function image(): Url
+    {
+        return $this->image;
+    }
+
     /**
      * @return Set<Package>
      */
