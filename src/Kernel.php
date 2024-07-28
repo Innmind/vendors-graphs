@@ -6,6 +6,7 @@ namespace App;
 use Innmind\Framework\{
     Application,
     Middleware,
+    Http\To,
 };
 use Formal\ORM\{
     Manager,
@@ -26,17 +27,11 @@ use Innmind\Http\{
     Response\StatusCode,
     Headers,
     Header\ContentType,
-    Header\Location,
-};
-use Innmind\Specification\{
-    Comparator\Property,
-    Sign,
 };
 use Innmind\Url\{
     Url,
     Path,
 };
-use Innmind\Immutable\Map;
 
 final class Kernel implements Middleware
 {
@@ -88,6 +83,20 @@ final class Kernel implements Middleware
                     $os->remote()->http(),
                 ),
             )
+            ->service(
+                'controller.vendor',
+                static fn($get) => new Controller\Vendor(
+                    $get(Services::orm()),
+                    $get(Services::storage()),
+                ),
+            )
+            ->service(
+                'controller.package',
+                static fn($get) => new Controller\Package(
+                    $get(Services::orm()),
+                    $get(Services::storage()),
+                ),
+            )
             ->command(static fn($get, $os) => new Command\AddVendor(
                 $os->clock(),
                 $os->remote()->http(),
@@ -120,65 +129,11 @@ final class Kernel implements Middleware
             )
             ->route(
                 Routes::vendor->toString(),
-                static fn($request, $variables, $get) => $get(Services::orm())
-                    ->repository(Domain\Vendor::class)
-                    ->matching(Property::of(
-                        'name',
-                        Sign::equality,
-                        $variables->get('name'),
-                    ))
-                    ->take(1)
-                    ->first()
-                    ->match(
-                        static fn($vendor) => Response::of(
-                            StatusCode::ok,
-                            $request->protocolVersion(),
-                            null,
-                            View\Vendor::of(
-                                $get(Services::storage()),
-                                $vendor,
-                            ),
-                        ),
-                        static fn() => Response::of(
-                            StatusCode::found,
-                            $request->protocolVersion(),
-                            Headers::of(
-                                Location::of(Routes::index->template()->expand(Map::of())),
-                            ),
-                        ),
-                    ),
+                To::service('controller.vendor'),
             )
             ->route(
                 Routes::packageDependencies->toString(),
-                static fn($request, $variables, $get) => $get(Services::orm())
-                    ->repository(Domain\Vendor::class)
-                    ->matching(Property::of(
-                        'name',
-                        Sign::equality,
-                        $variables->get('vendor'),
-                    ))
-                    ->take(1)
-                    ->first()
-                    ->filter(static fn() => $variables->get('package') !== '')
-                    ->match(
-                        static fn($vendor) => Response::of(
-                            StatusCode::ok,
-                            $request->protocolVersion(),
-                            null,
-                            View\Package::of(
-                                $get(Services::storage()),
-                                $vendor,
-                                $variables->get('package'),
-                            ),
-                        ),
-                        static fn() => Response::of(
-                            StatusCode::found,
-                            $request->protocolVersion(),
-                            Headers::of(
-                                Location::of(Routes::index->template()->expand(Map::of())),
-                            ),
-                        ),
-                    ),
+                To::service('controller.package'),
             )
             ->route(
                 Routes::style->toString(),
