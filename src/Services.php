@@ -3,6 +3,7 @@ declare(strict_types = 1);
 
 namespace App;
 
+use App\Infrastructure\LoadPackages;
 use Innmind\DI\Service;
 use Formal\ORM\Manager;
 use Innmind\Xml\Reader;
@@ -25,6 +26,7 @@ enum Services implements Service
     case loadVendorDependencies;
     case loadVendor;
     case loadPackage;
+    case loadPackages;
 
     /**
      * @return self<Manager>
@@ -78,5 +80,14 @@ enum Services implements Service
     {
         /** @var self<Package> */
         return self::loadPackage;
+    }
+
+    /**
+     * @return self<LoadPackages>
+     */
+    public static function loadPackages(): self
+    {
+        /** @var self<LoadPackages> */
+        return self::loadPackages;
     }
 }

@@ -3,25 +3,20 @@ declare(strict_types = 1);
 
 namespace App\Command;
 
-use App\Domain\{
-    Vendor,
-    Package,
+use App\{
+    Domain\Vendor,
+    Infrastructure\LoadPackages,
 };
 use Innmind\CLI\{
     Command,
     Console,
 };
 use Formal\ORM\Manager;
-use Innmind\DependencyGraph\{
-    Loader,
-    Vendor\Name as VendorName,
-};
 use Innmind\Filesystem\{
     Adapter,
     Name,
     Directory,
 };
-use Innmind\Url\Path;
 use Innmind\Immutable\{
     Str,
     Either,
@@ -30,12 +25,12 @@ use Innmind\Immutable\{
 final class UpdateVendors implements Command
 {
     private Manager $orm;
-    private Loader\Vendor $load;
+    private LoadPackages $load;
     private Adapter $storage;
 
     public function __construct(
         Manager $orm,
-        Loader\Vendor $load,
+        LoadPackages $load,
         Adapter $storage,
     ) {
         $this->orm = $orm;
@@ -66,21 +61,7 @@ final class UpdateVendors implements Command
     private function update(Console $console, Vendor $vendor): Console
     {
         $console = $console->output(Str::of("Updating {$vendor->name()}...\n"));
-        /** @psalm-suppress ArgumentTypeCoercion */
-        $packages = ($this->load)(VendorName::of($vendor->name()))
-            ->packages()
-            ->filter(static fn($package) => !$package->abandoned())
-            ->map(static fn($package) => Package::of(
-                $package->name()->package(),
-                $package->packagist(),
-                $package->repository(),
-                $package->repository()->withPath(
-                    $package->repository()->path()->resolve(Path::of('actions')),
-                ),
-                $package->repository()->withPath(
-                    $package->repository()->path()->resolve(Path::of('releases')),
-                ),
-            ));
+        $packages = ($this->load)($vendor->name());
         $stillExisting = $packages->map(static fn($package) => $package->name());
         $console = $vendor
             ->packages()

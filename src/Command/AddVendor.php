@@ -3,20 +3,16 @@ declare(strict_types = 1);
 
 namespace App\Command;
 
-use App\Domain\{
-    Vendor,
-    Package,
+use App\{
+    Domain\Vendor,
+    Domain\Package,
+    Infrastructure\LoadPackages,
 };
 use Innmind\CLI\{
     Command,
     Console,
 };
 use Formal\ORM\Manager;
-use Innmind\DependencyGraph\{
-    Loader,
-    Vendor\Name,
-    Package as PackageModel,
-};
 use Innmind\TimeContinuum\Clock;
 use Innmind\HttpTransport\Transport;
 use Innmind\Http\{
@@ -46,14 +42,14 @@ final class AddVendor implements Command
     private Transport $http;
     private Reader $parse;
     private Manager $orm;
-    private Loader\Vendor $load;
+    private LoadPackages $load;
 
     public function __construct(
         Clock $clock,
         Transport $http,
         Reader $parse,
         Manager $orm,
-        Loader\Vendor $load,
+        LoadPackages $load,
     ) {
         $this->clock = $clock;
         $this->http = $http;
@@ -75,7 +71,7 @@ final class AddVendor implements Command
         return $this->parse(
             $console,
             $vendor,
-            ($this->load)(Name::of($vendor))->packages(),
+            ($this->load)($vendor),
         );
     }
 
@@ -89,28 +85,13 @@ final class AddVendor implements Command
 
     /**
      * @param non-empty-string $vendor
-     * @param Set<PackageModel> $packages
+     * @param Set<Package> $packages
      */
     private function parse(
         Console $console,
         string $vendor,
         Set $packages,
     ): Console {
-        /** @psalm-suppress ArgumentTypeCoercion */
-        $packages = $packages
-            ->filter(static fn($package) => !$package->abandoned())
-            ->map(static fn($package) => Package::of(
-                $package->name()->package(),
-                $package->packagist(),
-                $package->repository(),
-                $package->repository()->withPath(
-                    $package->repository()->path()->resolve(Path::of('actions')),
-                ),
-                $package->repository()->withPath(
-                    $package->repository()->path()->resolve(Path::of('releases')),
-                ),
-            ));
-
         return $packages
             ->find(static fn() => true)
             ->map(

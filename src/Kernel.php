@@ -67,12 +67,18 @@ final class Kernel implements Middleware
                     $get(Services::loadPackage()),
                 ),
             )
+            ->service(
+                Services::loadPackages,
+                static fn($_, $os) => new Infrastructure\LoadPackages(
+                    $os->remote()->http(),
+                ),
+            )
             ->command(static fn($get, $os) => new Command\AddVendor(
                 $os->clock(),
                 $os->remote()->http(),
                 $get(Services::reader()),
                 $get(Services::orm()),
-                $get(Services::loadVendor()),
+                $get(Services::loadPackages()),
             ))
             ->command(static fn($get, $os) => new Command\RenderVendor(
                 $get(Services::orm()),
@@ -85,7 +91,7 @@ final class Kernel implements Middleware
             ))
             ->command(static fn($get, $os) => new Command\UpdateVendors(
                 $get(Services::orm()),
-                $get(Services::loadVendor()),
+                $get(Services::loadPackages()),
                 $get(Services::storage()),
             ));
     }
