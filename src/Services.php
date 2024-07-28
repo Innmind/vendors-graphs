@@ -6,6 +6,7 @@ namespace App;
 use Innmind\DI\Service;
 use Formal\ORM\Manager;
 use Innmind\Xml\Reader;
+use Innmind\Filesystem\Adapter;
 
 /**
  * @template S of object
@@ -15,6 +16,7 @@ enum Services implements Service
 {
     case orm;
     case reader;
+    case storage;
 
     /**
      * @return self<Manager>
@@ -32,5 +34,14 @@ enum Services implements Service
     {
         /** @var self<Reader> */
         return self::reader;
+    }
+
+    /**
+     * @return self<Adapter>
+     */
+    public static function storage(): self
+    {
+        /** @var self<Adapter> */
+        return self::storage;
     }
 }

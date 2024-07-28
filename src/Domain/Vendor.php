@@ -50,4 +50,20 @@ final class Vendor
             $clock->now(),
         );
     }
+
+    /**
+     * @return non-empty-string
+     */
+    public function name(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return Set<Package>
+     */
+    public function packages(): Set
+    {
+        return $this->packages;
+    }
 }

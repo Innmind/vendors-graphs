@@ -42,4 +42,12 @@ final class Package
             $releases,
         );
     }
+
+    /**
+     * @return non-empty-string
+     */
+    public function name(): string
+    {
+        return $this->name;
+    }
 }
