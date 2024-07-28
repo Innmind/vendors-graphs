@@ -132,6 +132,10 @@ final class Kernel implements Middleware
                 To::service('controller.vendor'),
             )
             ->route(
+                Routes::vendorWithSize->toString(),
+                To::service('controller.vendor'),
+            )
+            ->route(
                 Routes::packageDependencies->toString(),
                 To::service('controller.package'),
             )

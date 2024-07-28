@@ -9,6 +9,7 @@ enum Routes
 {
     case index;
     case vendor;
+    case vendorWithSize;
     case packageDependencies;
     case packageDependenciesWithSize;
     case packageDependents;
@@ -20,6 +21,7 @@ enum Routes
         return match ($this) {
             self::index => Template::of('/'),
             self::vendor => Template::of('/vendor{/name}'),
+            self::vendorWithSize => Template::of('/vendor{/name,size}'),
             self::packageDependencies => Template::of('/vendor{/vendor,package}/dependencies'),
             self::packageDependenciesWithSize => Template::of('/vendor{/vendor,package}/dependencies{/size}'),
             self::packageDependents => Template::of('/vendor{/vendor,package}/dependents'),
@@ -36,6 +38,7 @@ enum Routes
         return match ($this) {
             self::index => 'GET /',
             self::vendor => 'GET /vendor{/name}',
+            self::vendorWithSize => 'GET /vendor{/name,size}',
             self::packageDependencies => 'GET /vendor{/vendor,package}/dependencies',
             self::packageDependenciesWithSize => 'GET /vendor{/vendor,package}/dependencies{/size}',
             self::packageDependents => 'GET /vendor{/vendor,package}/dependents',

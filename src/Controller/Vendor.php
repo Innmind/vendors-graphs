@@ -52,6 +52,16 @@ final class Vendor
                     View\Vendor::of(
                         $this->storage,
                         $vendor,
+                        $variables
+                            ->maybe('size')
+                            ->match(
+                                static fn($size) => match ($size) {
+                                    'small' => Domain\Zoom::small,
+                                    'medium' => Domain\Zoom::medium,
+                                    default => Domain\Zoom::full,
+                                },
+                                static fn() => Domain\Zoom::medium,
+                            ),
                     ),
                 ),
                 static fn() => Response::of(
