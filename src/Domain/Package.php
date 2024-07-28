@@ -15,7 +15,7 @@ final class Package
      */
     private function __construct(
         private string $name,
-        private Url $packgist,
+        private Url $packagist,
         private Url $github,
         private Url $ci,
         private Url $releases,
@@ -29,14 +29,14 @@ final class Package
      */
     public static function of(
         string $name,
-        Url $packgist,
+        Url $packagist,
         Url $github,
         Url $ci,
         Url $releases,
     ): self {
         return new self(
             $name,
-            $packgist,
+            $packagist,
             $github,
             $ci,
             $releases,
@@ -51,8 +51,23 @@ final class Package
         return $this->name;
     }
 
+    public function packagist(): Url
+    {
+        return $this->packagist;
+    }
+
     public function github(): Url
     {
         return $this->github;
+    }
+
+    public function ci(): Url
+    {
+        return $this->ci;
+    }
+
+    public function releases(): Url
+    {
+        return $this->releases;
     }
 }

@@ -25,6 +25,7 @@ use Innmind\UI\{
     Center,
     NavigationLink,
     Progress,
+    Picker,
 };
 use Innmind\Filesystem\File\Content;
 use Innmind\Immutable\{
@@ -42,22 +43,80 @@ final class Package
         Adapter $storage,
         Domain\Vendor $vendor,
         string $selectedPackage,
+        Domain\Direction $direction,
     ): Content {
+        $toolbar = Toolbar::of(Text::of(\sprintf(
+            '%s/%s',
+            $vendor->name(),
+            $selectedPackage,
+        )))
+            ->leading(Button::of(
+                Routes::index->template()->expand(Map::of()),
+                Text::of('< Vendors'),
+            ));
+
+        $toolbar = $vendor
+            ->packages()
+            ->find(static fn($package) => $package->name() === $selectedPackage)
+            ->match(
+                static fn($package) => $toolbar->trailing(Stack::horizontal(
+                    Button::of(
+                        $package->packagist(),
+                        Text::of('Packagist'),
+                    ),
+                    Button::of(
+                        $package->github(),
+                        Text::of('GitHub'),
+                    ),
+                    Button::of(
+                        $package->ci(),
+                        Text::of('Actions'),
+                    ),
+                    Button::of(
+                        $package->releases(),
+                        Text::of('Releases'),
+                    ),
+                    Picker::of(
+                        $direction,
+                        Picker\Value::of(
+                            Domain\Direction::dependencies,
+                            Button::of(
+                                Routes::packageDependencies->template()->expand(Map::of(
+                                    ['vendor', $vendor->name()],
+                                    ['package', $package->name()],
+                                )),
+                                Text::of('Dependencies'),
+                            ),
+                        ),
+                        Picker\Value::of(
+                            Domain\Direction::dependents,
+                            Button::of(
+                                Routes::packageDependents->template()->expand(Map::of(
+                                    ['vendor', $vendor->name()],
+                                    ['package', $package->name()],
+                                )),
+                                Text::of('Dependents'),
+                            ),
+                        ),
+                    ),
+                )),
+                static fn() => $toolbar,
+            );
+
         $view = Window::of(
             $vendor->name(),
             Stack::vertical(
-                Toolbar::of(Text::of($vendor->name()))
-                    ->leading(Button::of(
-                        Routes::index->template()->expand(Map::of()),
-                        Text::of('< Vendors'),
-                    )), // todo trailing buttons
+                $toolbar,
                 Stack::horizontal(
                     Listing::of(
                         $vendor
                             ->packages()
                             ->sort(static fn($a, $b) => $a->name() <=> $b->name())
                             ->map(static fn($package) => NavigationLink::of(
-                                Routes::packageDependencies->template()->expand(Map::of(
+                                (match ($direction) {
+                                    Domain\Direction::dependencies => Routes::packageDependencies,
+                                    Domain\Direction::dependents => Routes::packageDependents,
+                                })->template()->expand(Map::of(
                                     ['vendor', $vendor->name()],
                                     ['package', $package->name()],
                                 )),
@@ -78,7 +137,10 @@ final class Package
                         )))
                         ->keep(Instance::of(Directory::class))
                         ->flatMap(static fn($directory) => $directory->get(Name::of(
-                            'dependencies.svg',
+                            \sprintf(
+                                '%s.svg',
+                                $direction->name,
+                            ),
                         )))
                         ->keep(Instance::of(File::class))
                         ->match(

@@ -10,6 +10,7 @@ enum Routes
     case index;
     case vendor;
     case packageDependencies;
+    case packageDependents;
     case style;
 
     public function template(): Template
@@ -18,6 +19,7 @@ enum Routes
             self::index => Template::of('/'),
             self::vendor => Template::of('/vendor{/name}'),
             self::packageDependencies => Template::of('/vendor{/vendor,package}/dependencies'),
+            self::packageDependents => Template::of('/vendor{/vendor,package}/dependents'),
             self::style => Template::of('/style'),
         };
     }
@@ -31,6 +33,7 @@ enum Routes
             self::index => 'GET /',
             self::vendor => 'GET /vendor{/name}',
             self::packageDependencies => 'GET /vendor{/vendor,package}/dependencies',
+            self::packageDependents => 'GET /vendor{/vendor,package}/dependents',
             self::style => 'GET /style',
         };
     }

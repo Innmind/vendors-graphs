@@ -22,7 +22,10 @@ use Innmind\Specification\{
     Comparator\Property,
     Sign,
 };
-use Innmind\Immutable\Map;
+use Innmind\Immutable\{
+    Map,
+    Str,
+};
 
 final class Package
 {
@@ -69,6 +72,10 @@ final class Package
                         $this->storage,
                         $vendor,
                         $package,
+                        match (Str::of($request->url()->path()->toString())->endsWith('dependencies')) {
+                            true => Domain\Direction::dependencies,
+                            false => Domain\Direction::dependents,
+                        },
                     ),
                 ),
                 static fn() => Response::of(

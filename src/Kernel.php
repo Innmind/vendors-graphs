@@ -136,6 +136,10 @@ final class Kernel implements Middleware
                 To::service('controller.package'),
             )
             ->route(
+                Routes::packageDependents->toString(),
+                To::service('controller.package'),
+            )
+            ->route(
                 Routes::style->toString(),
                 static fn($request, $_, $__, $os) => Theme::default
                     ->load($os->filesystem())
