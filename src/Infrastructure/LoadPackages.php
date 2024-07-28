@@ -89,7 +89,7 @@ final class LoadPackages
 
             /** @var non-empty-string */
             $package = Str::of($key)
-                ->drop(Str::of($key)->length() + 1) // +1 for the /
+                ->drop(Str::of($vendor)->length() + 1) // +1 for the /
                 ->toString();
             $repository = Url::of($value['repository'].'/');
 
