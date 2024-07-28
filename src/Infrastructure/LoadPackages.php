@@ -97,7 +97,7 @@ final class LoadPackages
                 $package,
                 $packagist->expand(Map::of(
                     ['vendor', $vendor],
-                    ['package', $key],
+                    ['package', $package],
                 )),
                 $repository,
                 $repository->withPath(
