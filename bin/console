@@ -10,8 +10,9 @@ use Innmind\Framework\{
     Application,
     Main\Cli,
 };
+use Innmind\OperatingSystem\Config;
 
-new class extends Cli
+new class(Config::of()->maxHttpConcurrency(50)) extends Cli
 {
     protected function configure(Application $app): Application
     {
