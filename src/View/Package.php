@@ -47,6 +47,21 @@ final class Package
         Domain\Direction $direction,
         Domain\Zoom $zoom,
     ): Content {
+        $svg = $storage
+            ->get(Name::of($vendor->name()))
+            ->keep(Instance::of(Directory::class))
+            ->flatMap(static fn($directory) => $directory->get(Name::of(
+                $selectedPackage,
+            )))
+            ->keep(Instance::of(Directory::class))
+            ->flatMap(static fn($directory) => $directory->get(Name::of(
+                \sprintf(
+                    '%s.svg',
+                    $direction->name,
+                ),
+            )))
+            ->keep(Instance::of(File::class));
+
         $toolbar = Toolbar::of(Text::of(\sprintf(
             '%s/%s',
             $vendor->name(),
@@ -109,29 +124,32 @@ final class Package
                             ),
                         ),
                     ),
-                    Picker::of(
-                        $zoom,
-                        Picker\Value::of(
-                            Domain\Zoom::small,
-                            Button::of(
-                                $withSize('small'),
-                                Text::of('25%'),
+                    ...$svg->match(
+                        static fn() => [Picker::of(
+                            $zoom,
+                            Picker\Value::of(
+                                Domain\Zoom::small,
+                                Button::of(
+                                    $withSize('small'),
+                                    Text::of('25%'),
+                                ),
                             ),
-                        ),
-                        Picker\Value::of(
-                            Domain\Zoom::medium,
-                            Button::of(
-                                $withSize('medium'),
-                                Text::of('50%'),
+                            Picker\Value::of(
+                                Domain\Zoom::medium,
+                                Button::of(
+                                    $withSize('medium'),
+                                    Text::of('50%'),
+                                ),
                             ),
-                        ),
-                        Picker\Value::of(
-                            Domain\Zoom::full,
-                            Button::of(
-                                $withSize('full'),
-                                Text::of('100%'),
+                            Picker\Value::of(
+                                Domain\Zoom::full,
+                                Button::of(
+                                    $withSize('full'),
+                                    Text::of('100%'),
+                                ),
                             ),
-                        ),
+                        )],
+                        static fn() => [],
                     ),
                 )),
                 static fn() => $toolbar,
@@ -163,33 +181,19 @@ final class Package
                                 Text::of('Overview'),
                             ))),
                     ),
-                    $storage
-                        ->get(Name::of($vendor->name()))
-                        ->keep(Instance::of(Directory::class))
-                        ->flatMap(static fn($directory) => $directory->get(Name::of(
-                            $selectedPackage,
-                        )))
-                        ->keep(Instance::of(Directory::class))
-                        ->flatMap(static fn($directory) => $directory->get(Name::of(
-                            \sprintf(
-                                '%s.svg',
-                                $direction->name,
-                            ),
-                        )))
-                        ->keep(Instance::of(File::class))
-                        ->match(
-                            static fn($svg) => ScrollView::of(
-                                Svg::of($svg->content())->zoom(
-                                    $zoom->toInt(),
-                                ),
-                            ),
-                            static fn() => Center::of(
-                                Stack::horizontal(
-                                    Progress::new(),
-                                    Text::of('Pending rendering'),
-                                ),
+                    $svg->match(
+                        static fn($svg) => ScrollView::of(
+                            Svg::of($svg->content())->zoom(
+                                $zoom->toInt(),
                             ),
                         ),
+                        static fn() => Center::of(
+                            Stack::horizontal(
+                                Progress::new(),
+                                Text::of('Pending rendering'),
+                            ),
+                        ),
+                    ),
                 ),
             ),
         )->stylesheet(Routes::style->template()->expand(Map::of()));
