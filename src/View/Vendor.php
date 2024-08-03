@@ -91,7 +91,7 @@ final class Vendor
                 ...$extra,
             ));
 
-        $view = Window::of(
+        return Window::of(
             $vendor->name(),
             Stack::vertical(
                 $toolbar,
@@ -129,8 +129,8 @@ final class Vendor
                     ),
                 ),
             ),
-        )->stylesheet(Routes::style->template()->expand(Map::of()));
-
-        return Content::ofLines($view->render());
+        )
+            ->stylesheet(Routes::style->template()->expand(Map::of()))
+            ->render();
     }
 }

@@ -33,7 +33,7 @@ final class Main
      */
     public static function of(Sequence $vendors): Content
     {
-        $view = Window::of(
+        return Window::of(
             'Vendors',
             Stack::vertical(
                 Toolbar::of(Text::of('Vendors'))
@@ -53,8 +53,8 @@ final class Main
                         ->map(Card::of(...)),
                 ),
             ),
-        )->stylesheet(Routes::style->template()->expand(Map::of()));
-
-        return Content::ofLines($view->render());
+        )
+            ->stylesheet(Routes::style->template()->expand(Map::of()))
+            ->render();
     }
 }
