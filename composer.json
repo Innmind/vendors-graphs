@@ -22,7 +22,8 @@
         "innmind/html": "~6.4",
         "innmind/dependency-graph": "^3.7.3",
         "innmind/url-template": "~3.1",
-        "innmind/async-http-server": "~3.0"
+        "innmind/async-http-server": "~3.0",
+        "innmind/hash": "^1.6"
     },
     "autoload": {
         "psr-4": {

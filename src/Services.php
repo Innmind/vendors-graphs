@@ -6,6 +6,7 @@ namespace App;
 use App\Infrastructure\LoadPackages;
 use Innmind\DI\Service;
 use Formal\ORM\Manager;
+use Innmind\HttpTransport\Transport;
 use Innmind\Xml\Reader;
 use Innmind\Filesystem\Adapter;
 use Innmind\DependencyGraph\Loader\{
@@ -27,6 +28,7 @@ enum Services implements Service
     case loadVendor;
     case loadPackage;
     case loadPackages;
+    case http;
 
     /**
      * @return self<Manager>
@@ -89,5 +91,14 @@ enum Services implements Service
     {
         /** @var self<LoadPackages> */
         return self::loadPackages;
+    }
+
+    /**
+     * @return self<Transport>
+     */
+    public static function http(): self
+    {
+        /** @var self<Transport> */
+        return self::http;
     }
 }

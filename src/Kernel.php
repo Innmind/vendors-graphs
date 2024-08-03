@@ -53,6 +53,13 @@ final class Kernel implements Middleware
                 ),
             ))
             ->service(Services::reader, static fn() => Reader::default())
+            ->service(Services::http, static fn($_, $os) => new Infrastructure\HttpTransport\Cache(
+                $os->remote()->http(),
+                $os
+                    ->filesystem()
+                    ->mount(Path::of(__DIR__.'/../var/cache/')),
+                $os->clock(),
+            ))
             ->service(
                 Services::storage,
                 static fn($_, $os) => $os
@@ -61,14 +68,14 @@ final class Kernel implements Middleware
             )
             ->service(
                 Services::loadPackage,
-                static fn($_, $os) => new Loader\Package(
-                    $os->remote()->http(),
+                static fn($get) => new Loader\Package(
+                    $get(Services::http()),
                 ),
             )
             ->service(
                 Services::loadVendor,
-                static fn($get, $os) => new Loader\Vendor(
-                    $os->remote()->http(),
+                static fn($get) => new Loader\Vendor(
+                    $get(Services::http()),
                     $get(Services::loadPackage()),
                 ),
             )
@@ -81,8 +88,8 @@ final class Kernel implements Middleware
             )
             ->service(
                 Services::loadPackages,
-                static fn($_, $os) => new Infrastructure\LoadPackages(
-                    $os->remote()->http(),
+                static fn($get) => new Infrastructure\LoadPackages(
+                    $get(Services::http()),
                 ),
             )
             ->service(
@@ -101,7 +108,7 @@ final class Kernel implements Middleware
             )
             ->command(static fn($get, $os) => new Command\AddVendor(
                 $os->clock(),
-                $os->remote()->http(),
+                $get(Services::http()),
                 $get(Services::reader()),
                 $get(Services::orm()),
                 $get(Services::loadPackages()),
@@ -115,7 +122,7 @@ final class Kernel implements Middleware
                 $os->control()->processes(),
                 $get(Services::storage()),
             ))
-            ->command(static fn($get, $os) => new Command\UpdateVendors(
+            ->command(static fn($get) => new Command\UpdateVendors(
                 $get(Services::orm()),
                 $get(Services::loadPackages()),
                 $get(Services::storage()),
