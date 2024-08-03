@@ -28,6 +28,7 @@ use Innmind\Http\{
     Headers,
     Header\ContentType,
 };
+use Innmind\TimeContinuum\PointInTime;
 use Innmind\Url\{
     Url,
     Path,
@@ -46,7 +47,7 @@ final class Kernel implements Middleware
                 Aggregates::of(
                     Types::of(
                         Support::class(Url::class, new ORM\UrlType),
-                        PointInTimeType::of($os->clock()),
+                        Support::class(PointInTime::class, PointInTimeType::new($os->clock()))
                     ),
                 ),
             ))
