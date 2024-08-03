@@ -9,7 +9,12 @@ use App\{
     Routes,
 };
 use Formal\ORM\Manager;
-use Innmind\Filesystem\Adapter;
+use Innmind\Filesystem\{
+    Adapter,
+    File,
+    Directory,
+    Name,
+};
 use Innmind\Http\{
     ServerRequest,
     Response,
@@ -25,6 +30,7 @@ use Innmind\Specification\{
 use Innmind\Immutable\{
     Map,
     Str,
+    Predicate\Instance,
 };
 
 final class Package
@@ -53,6 +59,21 @@ final class Package
             );
         }
 
+        $direction = match (Str::of($request->url()->path()->toString())->contains('dependencies')) {
+            true => Domain\Direction::dependencies,
+            false => Domain\Direction::dependents,
+        };
+        $zoom = $variables
+            ->maybe('size')
+            ->match(
+                static fn($size) => match ($size) {
+                    'small' => Domain\Zoom::small,
+                    'medium' => Domain\Zoom::medium,
+                    default => Domain\Zoom::full,
+                },
+                static fn() => Domain\Zoom::full,
+            );
+
         return $this
             ->orm
             ->repository(Domain\Vendor::class)
@@ -69,23 +90,26 @@ final class Package
                     $request->protocolVersion(),
                     null,
                     View\Package::of(
-                        $this->storage,
+                        $this
+                            ->storage
+                            ->get(Name::of($vendor->name()))
+                            ->keep(Instance::of(Directory::class))
+                            ->flatMap(static fn($directory) => $directory->get(Name::of(
+                                $package,
+                            )))
+                            ->keep(Instance::of(Directory::class))
+                            ->flatMap(static fn($directory) => $directory->get(Name::of(
+                                \sprintf(
+                                    '%s.svg',
+                                    $direction->name,
+                                ),
+                            )))
+                            ->keep(Instance::of(File::class))
+                            ->map(static fn($file) => $file->content()),
                         $vendor,
                         $package,
-                        match (Str::of($request->url()->path()->toString())->contains('dependencies')) {
-                            true => Domain\Direction::dependencies,
-                            false => Domain\Direction::dependents,
-                        },
-                        $variables
-                            ->maybe('size')
-                            ->match(
-                                static fn($size) => match ($size) {
-                                    'small' => Domain\Zoom::small,
-                                    'medium' => Domain\Zoom::medium,
-                                    default => Domain\Zoom::full,
-                                },
-                                static fn() => Domain\Zoom::full,
-                            ),
+                        $direction,
+                        $zoom,
                     ),
                 ),
                 static fn() => Response::of(

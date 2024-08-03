@@ -9,7 +9,11 @@ use App\{
     Routes,
 };
 use Formal\ORM\Manager;
-use Innmind\Filesystem\Adapter;
+use Innmind\Filesystem\{
+    Adapter,
+    File,
+    Name,
+};
 use Innmind\Http\{
     ServerRequest,
     Response,
@@ -22,7 +26,10 @@ use Innmind\Specification\{
     Comparator\Property,
     Sign,
 };
-use Innmind\Immutable\Map;
+use Innmind\Immutable\{
+    Map,
+    Predicate\Instance,
+};
 
 final class Vendor
 {
@@ -50,7 +57,14 @@ final class Vendor
                     $request->protocolVersion(),
                     null,
                     View\Vendor::of(
-                        $this->storage,
+                        $this
+                            ->storage
+                            ->get(Name::of(\sprintf(
+                                '%s.svg',
+                                $vendor->name(),
+                            )))
+                            ->keep(Instance::of(File::class))
+                            ->map(static fn($file) => $file->content()),
                         $vendor,
                         $variables
                             ->maybe('size')

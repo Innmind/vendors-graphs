@@ -14,6 +14,7 @@ use Formal\ORM\{
     Definition\Types,
     Definition\Type\Support,
     Definition\Type\PointInTimeType,
+    Sort,
 };
 use Innmind\DependencyGraph\{
     Loader,
@@ -125,7 +126,13 @@ final class Kernel implements Middleware
                     StatusCode::ok,
                     $request->protocolVersion(),
                     null,
-                    View\Main::of($get(Services::orm())),
+                    View\Main::of(
+                        $get(Services::orm())
+                            ->repository(Domain\Vendor::class)
+                            ->all()
+                            ->sort('addedAt', Sort::asc)
+                            ->sequence(),
+                    ),
                 ),
             )
             ->route(

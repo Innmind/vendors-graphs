@@ -7,12 +7,6 @@ use App\{
     Routes,
     Domain,
 };
-use Innmind\Filesystem\{
-    Adapter,
-    File,
-    Directory,
-    Name,
-};
 use Innmind\UI\{
     Window,
     Toolbar,
@@ -32,36 +26,22 @@ use Innmind\Url\Url;
 use Innmind\Immutable\{
     Map,
     Sequence,
-    Predicate\Instance,
+    Maybe,
 };
 
 final class Package
 {
     /**
+     * @param Maybe<Content> $svg
      * @param non-empty-string $selectedPackage
      */
     public static function of(
-        Adapter $storage,
+        Maybe $svg,
         Domain\Vendor $vendor,
         string $selectedPackage,
         Domain\Direction $direction,
         Domain\Zoom $zoom,
     ): Content {
-        $svg = $storage
-            ->get(Name::of($vendor->name()))
-            ->keep(Instance::of(Directory::class))
-            ->flatMap(static fn($directory) => $directory->get(Name::of(
-                $selectedPackage,
-            )))
-            ->keep(Instance::of(Directory::class))
-            ->flatMap(static fn($directory) => $directory->get(Name::of(
-                \sprintf(
-                    '%s.svg',
-                    $direction->name,
-                ),
-            )))
-            ->keep(Instance::of(File::class));
-
         $toolbar = Toolbar::of(Text::of(\sprintf(
             '%s/%s',
             $vendor->name(),
@@ -182,8 +162,8 @@ final class Package
                             ))),
                     ),
                     $svg->match(
-                        static fn($svg) => ScrollView::of(
-                            Svg::of($svg->content())->zoom(
+                        static fn($content) => ScrollView::of(
+                            Svg::of($content)->zoom(
                                 $zoom->toInt(),
                             ),
                         ),

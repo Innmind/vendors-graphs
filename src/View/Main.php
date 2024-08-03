@@ -7,10 +7,6 @@ use App\{
     Domain\Vendor,
     Routes,
 };
-use Formal\ORM\{
-    Manager,
-    Sort,
-};
 use Innmind\Filesystem\File\Content;
 use Innmind\UI\{
     Window,
@@ -25,11 +21,17 @@ use Innmind\UI\{
     NavigationLink,
 };
 use Innmind\Url\Url;
-use Innmind\Immutable\Map;
+use Innmind\Immutable\{
+    Map,
+    Sequence,
+};
 
 final class Main
 {
-    public static function of(Manager $orm): Content
+    /**
+     * @param Sequence<Vendor> $vendors
+     */
+    public static function of(Sequence $vendors): Content
     {
         $view = Window::of(
             'Vendors',
@@ -37,10 +39,7 @@ final class Main
                 Toolbar::of(Text::of('Vendors'))
                     ->trailing(Button::text(Url::of('https://twitter.com/Baptouuuu'), '+ Add')),
                 Grid::of(
-                    $orm
-                        ->repository(Vendor::class)
-                        ->all()
-                        ->sort('addedAt', Sort::asc)
+                    $vendors
                         ->map(static fn($vendor) => NavigationLink::of(
                             Routes::vendor->template()->expand(Map::of(
                                 ['name', $vendor->name()],

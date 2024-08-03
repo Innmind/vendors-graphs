@@ -7,11 +7,6 @@ use App\{
     Routes,
     Domain,
 };
-use Innmind\Filesystem\{
-    Adapter,
-    File,
-    Name,
-};
 use Innmind\UI\{
     Window,
     Toolbar,
@@ -30,23 +25,19 @@ use Innmind\Filesystem\File\Content;
 use Innmind\Immutable\{
     Map,
     Sequence,
-    Predicate\Instance,
+    Maybe,
 };
 
 final class Vendor
 {
+    /**
+     * @param Maybe<Content> $svg
+     */
     public static function of(
-        Adapter $storage,
+        Maybe $svg,
         Domain\Vendor $vendor,
         Domain\Zoom $zoom,
     ): Content {
-        $svg = $storage
-            ->get(Name::of(\sprintf(
-                '%s.svg',
-                $vendor->name(),
-            )))
-            ->keep(Instance::of(File::class));
-
         $extra = $svg->match(
             static fn() => [Picker::of(
                 $zoom,
@@ -124,8 +115,8 @@ final class Vendor
                             )->selectedWhen(true))),
                     ),
                     $svg->match(
-                        static fn($svg) => ScrollView::of(
-                            Svg::of($svg->content())->zoom(
+                        static fn($content) => ScrollView::of(
+                            Svg::of($content)->zoom(
                                 $zoom->toInt(),
                             ),
                         ),
