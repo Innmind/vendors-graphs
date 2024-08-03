@@ -47,7 +47,7 @@ final class Kernel implements Middleware
                 Aggregates::of(
                     Types::of(
                         Support::class(Url::class, new ORM\UrlType),
-                        Support::class(PointInTime::class, PointInTimeType::new($os->clock()))
+                        Support::class(PointInTime::class, PointInTimeType::new($os->clock())),
                     ),
                 ),
             ))
