@@ -17,7 +17,7 @@
     "require": {
         "php": "~8.2",
         "innmind/framework": "~2.3",
-        "innmind/ui": "dev-develop",
+        "innmind/ui": "~1.0",
         "formal/orm": "^3.1.1",
         "innmind/html": "~6.4",
         "innmind/dependency-graph": "^3.7.3",
