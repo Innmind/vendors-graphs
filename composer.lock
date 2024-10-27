@@ -269,16 +269,16 @@
         },
         {
             "name": "innmind/async-http-server",
-            "version": "3.0.2",
+            "version": "3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Innmind/async-http-server.git",
-                "reference": "ad50b1093d0beab60fb07e410ad8da4053271c05"
+                "reference": "390a66a3488c13684ca0d72aeb845f1f3213210a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Innmind/async-http-server/zipball/ad50b1093d0beab60fb07e410ad8da4053271c05",
-                "reference": "ad50b1093d0beab60fb07e410ad8da4053271c05",
+                "url": "https://api.github.com/repos/Innmind/async-http-server/zipball/390a66a3488c13684ca0d72aeb845f1f3213210a",
+                "reference": "390a66a3488c13684ca0d72aeb845f1f3213210a",
                 "shasum": ""
             },
             "require": {
@@ -317,9 +317,9 @@
             "homepage": "http://github.com/innmind/async-http-server",
             "support": {
                 "issues": "http://github.com/innmind/async-http-server/issues",
-                "source": "https://github.com/Innmind/async-http-server/tree/3.0.2"
+                "source": "https://github.com/Innmind/async-http-server/tree/3.1.0"
             },
-            "time": "2024-10-26T14:10:02+00:00"
+            "time": "2024-10-27T13:57:13+00:00"
         },
         {
             "name": "innmind/cli",
