@@ -20,6 +20,7 @@ use Innmind\Http\{
     Response,
     Response\StatusCode,
     Headers,
+    Header\ContentLength,
     Header\Location,
 };
 use Innmind\Router\Route\Variables;
@@ -85,11 +86,8 @@ final class Package
             ->take(1)
             ->first()
             ->match(
-                fn($vendor) => Response::of(
-                    StatusCode::ok,
-                    $request->protocolVersion(),
-                    null,
-                    View\Package::of(
+                function($vendor) use ($request, $package, $direction, $zoom) {
+                    $content = View\Package::of(
                         $this
                             ->storage
                             ->get(Name::of($vendor->name()))
@@ -110,8 +108,21 @@ final class Package
                         $package,
                         $direction,
                         $zoom,
-                    ),
-                ),
+                    );
+
+                    return Response::of(
+                        StatusCode::ok,
+                        $request->protocolVersion(),
+                        Headers::of(
+                            ...$content
+                                ->size()
+                                ->map(static fn($size) => ContentLength::of($size->toInt()))
+                                ->toSequence()
+                                ->toList(),
+                        ),
+                        $content,
+                    );
+                },
                 static fn() => Response::of(
                     StatusCode::found,
                     $request->protocolVersion(),
