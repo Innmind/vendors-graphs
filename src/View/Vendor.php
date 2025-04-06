@@ -15,7 +15,6 @@ use Innmind\UI\{
     Button,
     Listing,
     ScrollView,
-    Svg,
     Center,
     NavigationLink,
     Progress,

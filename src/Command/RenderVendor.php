@@ -167,7 +167,7 @@ final class RenderVendor implements Command
                     ->map(static fn($pair) => $pair[0]),
             ))
             ->map(static fn($content) => $content->filter(
-                static fn($line) => !$line->str()->matches('/^\<\!--.+--\>$/')
+                static fn($line) => !$line->str()->matches('/^\<\!--.+--\>$/'),
             ))
             ->map(static fn($content) => match ($package) {
                 null => File::named(
