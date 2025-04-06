@@ -112,6 +112,12 @@ final class Kernel implements Middleware
                     $get(Services::storage()),
                 ),
             )
+            ->service(
+                'controller.package.svg',
+                static fn($get) => new Controller\PackageSvg(
+                    $get(Services::storage()),
+                ),
+            )
             ->command(static fn($get, $os) => new Command\AddVendor(
                 $os->clock(),
                 $get(Services::http()),
@@ -161,12 +167,20 @@ final class Kernel implements Middleware
                 To::service('controller.vendor'),
             )
             ->route(
+                Routes::packageDependenciesSvg->toString(),
+                To::service('controller.package.svg'),
+            )
+            ->route(
                 Routes::packageDependencies->toString(),
                 To::service('controller.package'),
             )
             ->route(
                 Routes::packageDependenciesWithSize->toString(),
                 To::service('controller.package'),
+            )
+            ->route(
+                Routes::packageDependentsSvg->toString(),
+                To::service('controller.package.svg'),
             )
             ->route(
                 Routes::packageDependents->toString(),

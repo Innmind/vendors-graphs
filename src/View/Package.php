@@ -15,11 +15,12 @@ use Innmind\UI\{
     Button,
     Listing,
     ScrollView,
-    Svg,
     Center,
     NavigationLink,
     Progress,
     Picker,
+    Zoom,
+    Image,
 };
 use Innmind\Filesystem\File\Content;
 use Innmind\Url\Url;
@@ -163,7 +164,16 @@ final class Package
                     ),
                     $svg->match(
                         static fn($content) => ScrollView::of(
-                            Svg::of($content)->zoom(
+                            Zoom::of(
+                                Image::of(
+                                    (match ($direction) {
+                                        Domain\Direction::dependencies => Routes::packageDependenciesSvg,
+                                        Domain\Direction::dependents => Routes::packageDependentsSvg,
+                                    })->template()->expand(Map::of(
+                                        ['vendor', $vendor->name()],
+                                        ['package', $selectedPackage],
+                                    )),
+                                ),
                                 $zoom->toInt(),
                             ),
                         ),
