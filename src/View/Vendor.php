@@ -20,6 +20,8 @@ use Innmind\UI\{
     NavigationLink,
     Progress,
     Picker,
+    Image,
+    Zoom,
 };
 use Innmind\Filesystem\File\Content;
 use Innmind\Immutable\{
@@ -115,8 +117,11 @@ final class Vendor
                             )->selectedWhen(true))),
                     ),
                     $svg->match(
-                        static fn($content) => ScrollView::of(
-                            Svg::of($content)->zoom(
+                        static fn() => ScrollView::of(
+                            Zoom::of(
+                                Image::of(Routes::vendorSvg->template()->expand(Map::of(
+                                    ['name', $vendor->name()],
+                                ))),
                                 $zoom->toInt(),
                             ),
                         ),

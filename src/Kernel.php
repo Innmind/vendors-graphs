@@ -100,6 +100,12 @@ final class Kernel implements Middleware
                 ),
             )
             ->service(
+                'controller.vendor.svg',
+                static fn($get) => new Controller\VendorSvg(
+                    $get(Services::storage()),
+                ),
+            )
+            ->service(
                 'controller.package',
                 static fn($get) => new Controller\Package(
                     $get(Services::orm()),
@@ -141,6 +147,10 @@ final class Kernel implements Middleware
                             ->sequence(),
                     ),
                 ),
+            )
+            ->route(
+                Routes::vendorSvg->toString(),
+                To::service('controller.vendor.svg'),
             )
             ->route(
                 Routes::vendor->toString(),
