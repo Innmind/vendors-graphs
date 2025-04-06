@@ -19,7 +19,6 @@ use Innmind\Http\{
     Response,
     Response\StatusCode,
     Headers,
-    Header\ContentLength,
     Header\Location,
 };
 use Innmind\Router\Route\Variables;
@@ -53,8 +52,11 @@ final class Vendor
             ->take(1)
             ->first()
             ->match(
-                function($vendor) use ($request, $variables) {
-                    $content = View\Vendor::of(
+                fn($vendor) => Response::of(
+                    StatusCode::ok,
+                    $request->protocolVersion(),
+                    null,
+                    View\Vendor::of(
                         $this
                             ->storage
                             ->get(Name::of(\sprintf(
@@ -74,21 +76,8 @@ final class Vendor
                                 },
                                 static fn() => Domain\Zoom::medium,
                             ),
-                    );
-
-                    return Response::of(
-                        StatusCode::ok,
-                        $request->protocolVersion(),
-                        Headers::of(
-                            ...$content
-                                ->size()
-                                ->map(static fn($size) => ContentLength::of($size->toInt()))
-                                ->toSequence()
-                                ->toList(),
-                        ),
-                        $content,
-                    );
-                },
+                    ),
+                ),
                 static fn() => Response::of(
                     StatusCode::found,
                     $request->protocolVersion(),
